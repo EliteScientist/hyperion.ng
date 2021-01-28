@@ -33,3 +33,7 @@ endif()
 if (ENABLE_DX)
 	add_subdirectory(directx)
 endif()
+
+if (ENABLE_AUDIO)
+	add_subdirectory(audio)
+endif()

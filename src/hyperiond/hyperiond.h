@@ -58,6 +58,13 @@
 	typedef QObject DirectXWrapper;
 #endif
 
+#ifdef ENABLE_AUDIO
+	#include <grabber/AudioWrapper.h>
+#else
+	typedef QObject AudioWrapper;
+#endif
+
+
 #include <utils/Logger.h>
 #include <utils/VideoMode.h>
 
@@ -160,6 +167,7 @@ private:
 	void createGrabberQt(const QJsonObject & grabberConfig);
 	void createCecHandler();
 	void createGrabberDx(const QJsonObject & grabberConfig);
+	void createGrabberAudio(const QJsonObject & grabberConfig);
 
 	Logger*                    _log;
 	HyperionIManager*          _instanceManager;
@@ -179,6 +187,7 @@ private:
 	OsxWrapper*                _osxGrabber;
 	QtWrapper*                 _qtGrabber;
 	DirectXWrapper*            _dxGrabber;
+	AudioWrapper*			   _audioGrabber;
 	SSDPHandler*               _ssdp;
 	CECHandler*                _cecHandler;
 	FlatBufferServer*          _flatBufferServer;

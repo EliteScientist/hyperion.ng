@@ -74,6 +74,7 @@ HyperionDaemon::HyperionDaemon(const QString& rootPath, QObject* parent, bool lo
 	  , _sslWebserver(nullptr)
 	  , _jsonServer(nullptr)
 	  , _v4l2Grabber(nullptr)
+	  , _audioGrabber(nullptr)
 	  , _dispmanx(nullptr)
 	  , _x11Grabber(nullptr)
 	  , _xcbGrabber(nullptr)
@@ -253,6 +254,7 @@ void HyperionDaemon::freeObjects()
 	delete _qtGrabber;
 	delete _dxGrabber;
 	delete _v4l2Grabber;
+	delete _audioGrabber;
 
 	_v4l2Grabber = nullptr;
 
@@ -262,6 +264,7 @@ void HyperionDaemon::freeObjects()
 	_osxGrabber = nullptr;
 	_qtGrabber = nullptr;
 	_dxGrabber = nullptr;
+	_audioGrabber = nullptr;
 }
 
 void HyperionDaemon::startNetworkServices()
@@ -636,6 +639,18 @@ void HyperionDaemon::handleSettingsUpdate(settings::type settingsType, const QJs
 		Debug(_log, "The v4l2 grabber is not supported on this platform");
 #endif
 	}
+	else if (settingsType == settings::AUDIO)
+	{
+		// Process Audio Grabber for windows or linux
+		if (_audioGrabber == nullptr)
+		{
+			createGrabberAudio(config.object());
+			
+		}
+#ifdef ENABLE_AUDIO
+		_audioGrabber->tryStart();
+#endif
+	}
 }
 
 void HyperionDaemon::createGrabberDispmanx()
@@ -781,6 +796,15 @@ void HyperionDaemon::createGrabberOsx(const QJsonObject& grabberConfig)
 	Debug(_log, "The osx grabber is not supported on this platform");
 #endif
 }
+
+void HyperionDaemon::createGrabberAudio(const QJsonObject& grabberConfig)
+{
+	_audioGrabber = new AudioWrapper(grabberConfig["device"].toString(), _grabber_frequency);
+
+	connect(this, &HyperionDaemon::setVideoMode, _audioGrabber, &AudioWrapper::setVideoMode); // Do we need this?
+	connect(this, &HyperionDaemon::settingsChanged, _audioGrabber, &AudioWrapper::handleSettingsUpdate);
+}
+
 
 void HyperionDaemon::createCecHandler()
 {
