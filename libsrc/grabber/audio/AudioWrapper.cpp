@@ -13,7 +13,7 @@ void AudioWrapper::action()
 
 bool AudioWrapper::start()
 {
-	retirm (_grabber.startAudio() && GrabberWrapper::start());
+	return (_grabber.startAudio() && GrabberWrapper::start());
 }
 
 void AudioWrapper::stop()

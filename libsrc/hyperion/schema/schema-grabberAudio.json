@@ -1,0 +1,43 @@
+{
+	"type" : "object",
+	"required" : true,
+	"title" : "edt_conf_audio_heading_title",
+	"properties" :
+	{
+		"device" :
+		{
+			"type" : "string",
+			"title" : "edt_conf_enum_custom",
+			"default" : "auto",
+			"options" : {
+				"hidden":true
+			},
+			"required" : true,
+			"propertyOrder" : 2,
+			"comment" : "The 'available_devices' settings are dynamically inserted into the WebUI under PropertyOrder '1'."
+		},
+		"input" :
+		{
+			"type" : "integer",
+			"title" : "edt_conf_enum_custom",
+			"default" : 0,
+			"options" : {
+				"hidden":true
+			},
+			"required" : true,
+			"propertyOrder" : 4,
+			"comment" : "The 'device_inputs' settings are dynamically inserted into the WebUI under PropertyOrder '3'."
+		},
+		"multiplier": {
+			"type": "number",
+			"title": "edt_conf_audio_multiplier_title",
+			"default": 1,
+			"minimum": 0,
+			"step": 0.01,
+			"required": true,
+			"propertyOrder": 5,
+			"comment": "The multiplier is used to scale the audio input signal. Increase or decrease to achieve the desired effect."
+		}
+	},
+	"additionalProperties" : true
+}

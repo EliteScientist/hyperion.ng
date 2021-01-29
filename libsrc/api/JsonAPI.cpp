@@ -467,7 +467,7 @@ void JsonAPI::handleServerInfoCommand(const QJsonObject &message, const QString 
 	QJsonObject grabbers;
 	QJsonArray availableGrabbers;
 
-#if defined(ENABLE_DISPMANX) || defined(ENABLE_V4L2) || defined(ENABLE_FB) || defined(ENABLE_AMLOGIC) || defined(ENABLE_OSX) || defined(ENABLE_X11) || defined(ENABLE_XCB) || defined(ENABLE_QT)
+#if defined(ENABLE_DISPMANX) || defined(ENABLE_V4L2) || defined(ENABLE_AUDIO) || defined(ENABLE_FB) || defined(ENABLE_AMLOGIC) || defined(ENABLE_OSX) || defined(ENABLE_X11) || defined(ENABLE_XCB) || defined(ENABLE_QT)
 
 	if ( GrabberWrapper::getInstance() != nullptr )
 	{
@@ -485,14 +485,14 @@ void JsonAPI::handleServerInfoCommand(const QJsonObject &message, const QString 
 #if defined(ENABLE_V4L2)
 
 	QJsonArray availableV4L2devices;
-	for (const auto& devicePath : GrabberWrapper::getInstance()->getV4L2devices())
+	for (const auto& devicePath : GrabberWrapper::getInstance()->getDevices())
 	{
 		QJsonObject device;
 		device["device"] = devicePath;
-		device["name"] = GrabberWrapper::getInstance()->getV4L2deviceName(devicePath);
+		device["name"] = GrabberWrapper::getInstance()->getDeviceName(devicePath);
 
 		QJsonArray availableInputs;
-		QMultiMap<QString, int> inputs = GrabberWrapper::getInstance()->getV4L2deviceInputs(devicePath);
+		QMultiMap<QString, int> inputs = GrabberWrapper::getInstance()->getDeviceInputs(devicePath);
 		for (auto input = inputs.begin(); input != inputs.end(); input++)
 		{
 			QJsonObject availableInput;
@@ -522,6 +522,34 @@ void JsonAPI::handleServerInfoCommand(const QJsonObject &message, const QString 
 	}
 
 	grabbers["v4l2_properties"] = availableV4L2devices;
+
+#endif
+
+#if defined(ENABLE_AUDIO)
+
+	QJsonArray availableAudiodevices;
+	for (const auto& devicePath : GrabberWrapper::getInstance()->getDevices())
+	{
+		QJsonObject device;
+		device["device"] = devicePath;
+		device["name"] = GrabberWrapper::getInstance()->getDeviceName(devicePath);
+
+		QJsonArray availableInputs;
+		QMultiMap<QString, int> inputs = GrabberWrapper::getInstance()->getDeviceInputs(devicePath);
+		for (auto input = inputs.begin(); input != inputs.end(); input++)
+		{
+			QJsonObject availableInput;
+			availableInput["inputName"] = input.key();
+			availableInput["inputIndex"] = input.value();
+			availableInputs.append(availableInput);
+		}
+		device.insert("inputs", availableInputs);
+
+		
+		availableAudiodevices.append(device);
+	}
+
+	grabbers["audio_properties"] = availableAudiodevices;
 
 #endif
 

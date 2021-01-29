@@ -1368,7 +1368,7 @@ bool V4L2Grabber::setFramerate(int fps)
 	return false;
 }
 
-QStringList V4L2Grabber::getV4L2devices() const
+QStringList V4L2Grabber::getDevices() const
 {
 	QStringList result = QStringList();
 	for (auto it = _deviceProperties.begin(); it != _deviceProperties.end(); ++it)
@@ -1378,12 +1378,12 @@ QStringList V4L2Grabber::getV4L2devices() const
 	return result;
 }
 
-QString V4L2Grabber::getV4L2deviceName(const QString& devicePath) const
+QString V4L2Grabber::getDeviceName(const QString& devicePath) const
 {
 	return _deviceProperties.value(devicePath).name;
 }
 
-QMultiMap<QString, int> V4L2Grabber::getV4L2deviceInputs(const QString& devicePath) const
+QMultiMap<QString, int> V4L2Grabber::getDeviceInputs(const QString& devicePath) const
 {
 	return _deviceProperties.value(devicePath).inputs;
 }

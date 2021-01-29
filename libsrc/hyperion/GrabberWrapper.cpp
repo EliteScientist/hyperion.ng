@@ -82,6 +82,10 @@ QStringList GrabberWrapper::availableGrabbers()
 	grabbers << "v4l2";
 	#endif
 
+	#ifdef ENABLE_AUDIO
+	grabbers << "audio";
+	#endif
+
 	#ifdef ENABLE_FB
 	grabbers << "framebuffer";
 	#endif
@@ -171,6 +175,13 @@ void GrabberWrapper::handleSettingsUpdate(settings::type type, const QJsonDocume
 		// eval new update time
 		updateTimer(1000/obj["frequency_Hz"].toInt(10));
 	}
+	else if (type == settings::AUDIO)
+	{
+		const QJsonObject& obj = config.object();
+
+		// eval new update time
+		updateTimer(1000 / obj["frequency_Hz"].toInt(10));
+	}
 }
 
 void GrabberWrapper::handleSourceRequest(hyperion::Components component, int hyperionInd, bool listen)
@@ -199,37 +210,53 @@ void GrabberWrapper::handleSourceRequest(hyperion::Components component, int hyp
 		else
 			start();
 	}
+	else if (component == hyperion::Components::COMP_AUDIO)
+	{
+		if (listen && !GRABBER_AUDIO_CLIENTS.contains(hyperionInd))
+			GRABBER_AUDIO_CLIENTS.append(hyperionInd);
+		else if (!listen)
+			GRABBER_AUDIO_CLIENTS.removeOne(hyperionInd);
+
+		if (GRABBER_AUDIO_CLIENTS.empty())
+			stop();
+		else
+			start();
+	}
 }
 
 void GrabberWrapper::tryStart()
 {
 	// verify start condition
-	if((_grabberName.startsWith("V4L") && !GRABBER_V4L_CLIENTS.empty()) || (!_grabberName.startsWith("V4L") && !GRABBER_SYS_CLIENTS.empty()))
+	if((_grabberName.startsWith("V4L") && !GRABBER_V4L_CLIENTS.empty()) ||
+		(!_grabberName.startsWith("V4L") && !GRABBER_SYS_CLIENTS.empty()) ||
+		(!_grabberName.startsWith("AUDIO") && !GRABBER_AUDIO_CLIENTS.empty()))
 	{
 		start();
 	}
 }
 
-QStringList GrabberWrapper::getV4L2devices() const
+QStringList GrabberWrapper::getDevices() const
 {
-	if(_grabberName.startsWith("V4L"))
-		return _ggrabber->getV4L2devices();
+	if(_grabberName.startsWith("V4L") || _grabberName.startsWith("AUDIO"))
+		return _ggrabber->getDevices();
 
 	return QStringList();
 }
 
-QString GrabberWrapper::getV4L2deviceName(const QString& devicePath) const
+QString GrabberWrapper::getDeviceName(const QString& devicePath) const
 {
-	if(_grabberName.startsWith("V4L"))
-		return _ggrabber->getV4L2deviceName(devicePath);
+	if(_grabberName.startsWith("V4L") || _grabberName.startsWith("AUDIO"))
+		return _ggrabber->getDeviceName(devicePath);
 
 	return QString();
 }
 
-QMultiMap<QString, int> GrabberWrapper::getV4L2deviceInputs(const QString& devicePath) const
+QMultiMap<QString, int> GrabberWrapper::getDeviceInputs(const QString& devicePath) const
 {
-	if(_grabberName.startsWith("V4L"))
-		return _ggrabber->getV4L2deviceInputs(devicePath);
+	if(_grabberName.startsWith("V4L") || _grabberName.startsWith("AUDIO"))
+		return _ggrabber->getDeviceInputs(devicePath);
+
+	
 
 	return QMultiMap<QString, int>();
 }

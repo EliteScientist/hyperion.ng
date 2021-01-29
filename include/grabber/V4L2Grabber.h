@@ -128,17 +128,17 @@ public:
 	///
 	/// @brief overwrite Grabber.h implementation
 	///
-	QStringList getV4L2devices() const override;
+	QStringList getDevices() const override;
 
 	///
 	/// @brief overwrite Grabber.h implementation
 	///
-	QString getV4L2deviceName(const QString& devicePath) const override;
+	QString getDeviceName(const QString& devicePath) const override;
 
 	///
 	/// @brief overwrite Grabber.h implementation
 	///
-	QMultiMap<QString, int> getV4L2deviceInputs(const QString& devicePath) const override;
+	QMultiMap<QString, int> getDeviceInputs(const QString& devicePath) const override;
 
 	///
 	/// @brief overwrite Grabber.h implementation

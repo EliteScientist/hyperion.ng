@@ -21,6 +21,7 @@ class QTimer;
 /// List of Hyperion instances that requested screen capt
 static QList<int> GRABBER_SYS_CLIENTS;
 static QList<int> GRABBER_V4L_CLIENTS;
+static QList<int> GRABBER_AUDIO_CLIENTS;
 
 ///
 /// This class will be inherted by FramebufferWrapper and others which contains the real capture interface
@@ -57,24 +58,24 @@ public:
 	virtual bool isActive() const;
 
 	///
-	/// @brief Get a list of all available V4L devices
-	/// @return List of all available V4L devices on success else empty List
+	/// @brief Get a list of all available devices
+	/// @return List of all available devices on success else empty List
 	///
-	virtual QStringList getV4L2devices() const;
+	virtual QStringList getDevices() const;
 
 	///
-	/// @brief Get the V4L device name
+	/// @brief Get the device name
 	/// @param devicePath The device path
-	/// @return The name of the V4L device on success else empty String
+	/// @return The name of the device on success else empty String
 	///
-	virtual QString getV4L2deviceName(const QString& devicePath) const;
+	virtual QString getDeviceName(const QString& devicePath) const;
 
 	///
 	/// @brief Get a name/index pair of supported device inputs
 	/// @param devicePath The device path
 	/// @return multi pair of name/index on success else empty pair
 	///
-	virtual QMultiMap<QString, int> getV4L2deviceInputs(const QString& devicePath) const;
+	virtual QMultiMap<QString, int> getDeviceInputs(const QString& devicePath) const;
 
 	///
 	/// @brief Get a list of supported device resolutions

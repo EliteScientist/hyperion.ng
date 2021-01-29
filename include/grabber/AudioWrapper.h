@@ -32,7 +32,9 @@ class AudioWrapper : public GrabberWrapper
 		///
 		/// Performs a single frame grab and computes the led-colors
 		///
-		virtual void action();
+		void action() override;
+		bool start() override;
+		void stop() override;
 
 	private:
 		/// The actual grabber

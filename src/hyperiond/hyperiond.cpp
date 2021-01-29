@@ -149,6 +149,9 @@ HyperionDaemon::HyperionDaemon(const QString& rootPath, QObject* parent, bool lo
 	// init v4l2 capture
 	handleSettingsUpdate(settings::V4L2, getSetting(settings::V4L2));
 
+	// init audio capture
+	handleSettingsUpdate(settings::AUDIO, getSetting(settings::AUDIO));
+
 	// ---- network services -----
 	startNetworkServices();
 }
@@ -641,13 +644,14 @@ void HyperionDaemon::handleSettingsUpdate(settings::type settingsType, const QJs
 	}
 	else if (settingsType == settings::AUDIO)
 	{
+#ifdef ENABLE_AUDIO
 		// Process Audio Grabber for windows or linux
 		if (_audioGrabber == nullptr)
 		{
 			createGrabberAudio(config.object());
 			
 		}
-#ifdef ENABLE_AUDIO
+
 		_audioGrabber->tryStart();
 #endif
 	}

@@ -28,8 +28,14 @@ class AudioGrabber : public Grabber
 
 		virtual bool startAudio();
 		virtual void stopAudio();
-		virtual QObjectList listAudioDevices();
 
+		struct DeviceProperties
+		{
+			QString					name = QString();
+			QMultiMap<QString, int>	inputs = QMultiMap<QString, int>();
+			QStringList				resolutions = QStringList();
+			QStringList				framerates = QStringList();
+		};
 	private:
 		///
 		/// @brief free the _screen pointer
@@ -37,4 +43,7 @@ class AudioGrabber : public Grabber
 		void freeResources();
 		
 		virtual int16_t grabAudioFrame(int16_t * buffer);
+
+	protected:
+		QMap<QString, AudioGrabber::DeviceProperties> _deviceProperties;
 };

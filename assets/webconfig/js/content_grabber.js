@@ -1,9 +1,11 @@
 $(document).ready(function () {
   performTranslation();
   var conf_editor_v4l2 = null;
+  var conf_editor_audio = null;
   var conf_editor_fg = null;
   var conf_editor_instCapt = null;
-  var V4L2_AVAIL = window.serverInfo.grabbers.available.includes("v4l2");
+  const V4L2_AVAIL = window.serverInfo.grabbers.available.includes("v4l2");
+  const AUDIO_AVAIL = window.serverInfo.grabbers.available.includes("audio");
 
   if (V4L2_AVAIL) {
     // Dynamic v4l2 enum schema
@@ -179,6 +181,158 @@ $(document).ready(function () {
     });
   }
 
+
+  if (AUDIO_AVAIL) {
+    var audio_dynamic_enum_schema = {
+      "available_devices":
+      {
+        "type": "string",
+        "title": "edt_conf_audio_device_title",
+        "propertyOrder": 1,
+        "required": true
+      },
+      "device_inputs":
+      {
+        "type": "string",
+        "title": "edt_conf_audio_input_title",
+        "propertyOrder": 3,
+        "required": true
+      }
+    };
+
+    // Build Audio Schema
+    var buildAudioSchemaPart = function (key, schema, device) {
+      if (schema[key]) {
+        var enumVals = [];
+        var enumTitelVals = [];
+        var audio_properties = JSON.parse(JSON.stringify(window.serverInfo.grabbers.audio_properties));
+
+        if (key === 'available_devices')
+        {
+          for (var i = 0; i < audio_properties.length; i++)
+          {
+            enumVals.push(audio_properties[i]['device']);
+
+            audio_properties[i].hasOwnProperty('name')
+              ? enumTitelVals.push(audio_properties[i]['name'])
+              : enumTitelVals.push(audio_properties[i]['device']);
+          }
+        }
+        else
+        if (key == 'device_inputs')
+        {
+          for (var i = 0; i < audio_properties.length; i++)
+          {
+            if (audio_properties[i]['device'] == device)
+            {
+              for (var index = 0; index < audio_properties[i]['inputs'].length; index++)
+              {
+                enumVals.push(audio_properties[i]['inputs'][index]['inputIndex'].toString());
+                enumTitelVals.push(audio_properties[i]['inputs'][index]['inputName']);
+              }
+              break;
+            }
+          }
+        }
+
+        window.schema.grabberAudio.properties[key] = {
+          "type": schema[key].type,
+          "title": schema[key].title,
+          "enum": [].concat(["auto"], enumVals, ["custom"]),
+          "options":
+          {
+            "enum_titles": [].concat(["edt_conf_enum_automatic"], enumTitelVals, ["edt_conf_enum_custom"]),
+          },
+          "propertyOrder": schema[key].propertyOrder,
+          "required": schema[key].required
+        };
+      }
+    };
+
+    // Switch between visible states
+    function toggleAudioOption(option, state) {
+      $('[data-schemapath="root.grabberAudio.' + option + '"]').toggle(state);
+      if (state) (
+        $('[data-schemapath="root.grabberAudio.' + option + '"]').addClass('col-md-12'),
+        $('label[for="root_grabberAudio_' + option + '"]').css('left', '10px'),
+        $('[id="root_grabberAudio_' + option + '"]').css('left', '10px')
+      );
+    }
+
+    // Watch all Audio dynamic fields
+    var setAudioWatchers = function (schema) {
+      var path = 'root.grabberAudio.';
+      Object.keys(schema).forEach(function (key)
+      {
+        conf_editor_audio.watch(path + key, function ()
+        {
+          var ed = conf_editor_audio.getEditor(path + key);
+          var val = ed.getValue();
+
+          if (key == 'available_devices') {
+            var audioProperties = ['device_inputs'];
+            if (val == 'custom')
+            {
+              var grabberAudio = ed.parent;
+              audioProperties.forEach(function (item) {
+                buildAudioSchemaPart(item, audio_dynamic_enum_schema, 'none');
+                grabberAudio.original_schema.properties[item] = window.schema.grabberAudio.properties[item];
+                grabberAudio.schema.properties[item] = window.schema.grabberAudio.properties[item];
+                conf_editor_audio.validator.schema.properties.grabberAudio.properties[item] = window.schema.grabberAudio.properties[item];
+
+                grabberAudio.removeObjectProperty(item);
+                delete grabberAudio.cached_editors[item];
+                grabberAudio.addObjectProperty(item);
+
+                conf_editor_audio.getEditor(path + item).enable();
+              });
+
+              conf_editor_audio.getEditor(path + 'standard').enable();
+              toggleAudioOption('device', true);
+            } else if (val == 'auto') {
+              audioProperties.forEach(function (item) {
+                conf_editor_audio.getEditor(path + item).setValue('auto');
+                conf_editor_audio.getEditor(path + item).disable();
+              });
+
+              conf_editor_audio.getEditor(path + 'standard').setValue('auto');
+              conf_editor_audio.getEditor(path + 'standard').disable();
+
+              (toggleAudioOption('device', false), toggleAudioOption('input', false));
+            } else {
+              var grabberAudio = ed.parent;
+              audioProperties.forEach(function (item) {
+                buildAudioSchemaPart(item, audio_dynamic_enum_schema, val);
+                grabberAudio.original_schema.properties[item] = window.schema.grabberAudio.properties[item];
+                grabberAudio.schema.properties[item] = window.schema.grabberAudio.properties[item];
+                conf_editor_audio.validator.schema.properties.grabberAudio.properties[item] = window.schema.grabberAudio.properties[item];
+
+                grabberAudio.removeObjectProperty(item);
+                delete grabberAudio.cached_editors[item];
+                grabberAudio.addObjectProperty(item);
+
+                conf_editor_audio.getEditor(path + item).enable();
+              });
+
+              conf_editor_audio.getEditor(path + 'standard').enable();
+              toggleAudioOption('device', false);
+            }
+          }
+
+          if (key == 'device_inputs')
+            val != 'custom'
+              ? toggleAudioOption('input', false)
+              : toggleAudioOption('input', true);
+        });
+      });
+    };
+
+    // Insert dynamic v4l2 enum schema parts
+    Object.keys(audio_dynamic_enum_schema).forEach(function (key) {
+      buildAudioSchemaPart(key, audio_dynamic_enum_schema, window.serverConfig.grabberAudio.device);
+    });
+
+  }
   if (window.showOptHelp) {
     // Instance Capture
     $('#conf_cont').append(createRow('conf_cont_instCapt'));
@@ -195,6 +349,13 @@ $(document).ready(function () {
       $('#conf_cont').append(createRow('conf_cont_v4l'));
       $('#conf_cont_v4l').append(createOptPanel('fa-camera', $.i18n("edt_conf_v4l2_heading_title"), 'editor_container_v4l2', 'btn_submit_v4l2'));
       $('#conf_cont_v4l').append(createHelpTable(window.schema.grabberV4L2.properties, $.i18n("edt_conf_v4l2_heading_title")));
+    }
+
+    // Audio - hide if not available
+    if (AUDIO_AVAIL) {
+      $('#conf_cont').append(createRow('conf_cont_audio'));
+      $('#conf_cont_audio').append(createOptPanel('fa-microphone', $.i18n("edt_conf_audio_heading_title"), 'editor_container_audio', 'btn_submit_audio'));
+      $('#conf_cont_audio').append(createHelpTable(window.schema.grabberAudio.properties, $.i18n("edt_conf_audio_heading_title")));
     }
   } else {
     $('#conf_cont').addClass('row');
@@ -320,6 +481,57 @@ $(document).ready(function () {
     });
   }
 
+  //////////////// Audio Editor ////////////////////
+  if (AUDIO_AVAIL) {
+    conf_editor_audio = createJsonEditor('editor_container_audio', {
+      grabberAudio: window.schema.grabberAudio
+    }, true, true);
+
+    conf_editor_audio.on('change', function () {
+      conf_editor_audio.validate().length || window.readOnlyMode ? $('#btn_submit_audio').attr('disabled', true) : $('#btn_submit_audio').attr('disabled', false);
+    });
+
+    conf_editor_audio.on('ready', function () {
+      setAudioWatchers(audio_dynamic_enum_schema);
+
+      if (window.serverConfig.grabberAudio.available_devices == 'custom' && window.serverConfig.grabberAudio.device != 'auto')
+        toggleAudioOption('device', true);
+
+      if (window.serverConfig.grabberAudio.device == 'auto')
+        conf_editor_audio.getEditor('root.grabberAudio.available_devices').setValue('auto');
+
+      if (window.serverConfig.grabberAudio.available_devices == 'auto') {
+        ['device_inputs'].forEach(function (item) {
+          conf_editor_audio.getEditor('root.grabberAudio.' + item).setValue('auto');
+          conf_editor_audio.getEditor('root.grabberAudio.' + item).disable();
+        });
+      }
+
+      if (window.serverConfig.grabberAudio.device_inputs == 'custom' && window.serverConfig.grabberAudio.device != 'auto')
+        toggleAudioOption('input', true);
+    });
+
+    $('#btn_submit_audio').off().on('click', function () {
+      var audioOptions = conf_editor_audio.getValue();
+
+      if (audioOptions.grabberAudio.available_devices != 'custom' && audioOptions.grabberAudio.available_devices != 'auto')
+        audioOptions.grabberAudio.device = audioOptions.grabberAudio.available_devices;
+
+      if (audioOptions.grabberAudio.available_devices == 'auto')
+        audioOptions.grabberAudio.device = 'auto';
+
+      if (audioOptions.grabberAudio.device_inputs != 'custom' && audioOptions.grabberV4L2.device_inputs != 'auto' && audioOptions.grabberAudio.available_devices != 'auto')
+        audioOptions.grabberAudio.input = parseInt(audioOptions.grabberAudio.device_inputs);
+
+      if (audioOptions.grabberAudio.device_inputs == 'auto')
+        audioOptions.grabberAudio.input = -1;
+
+      requestWriteConfig(audioOptions);
+    });
+  }
+
+
+
   //////////////////////////////////////////////////
 
   //create introduction
@@ -327,6 +539,9 @@ $(document).ready(function () {
     createHint("intro", $.i18n('conf_grabber_fg_intro'), "editor_container_fg");
     if (V4L2_AVAIL) {
       createHint("intro", $.i18n('conf_grabber_v4l_intro'), "editor_container_v4l2");
+    }
+    if (AUDIO_AVAIL) {
+      createHint("intro", $.i18n('conf_grabber_audio_intro'), "editor_container_audio");
     }
   }
 

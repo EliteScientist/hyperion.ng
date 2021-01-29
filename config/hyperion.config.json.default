@@ -84,6 +84,12 @@
 		"sDHOffsetMax"          : 0.75
 	},
 
+	"grabberAudio" :
+	{
+		"device"                : "auto",
+		"input"                 : 0,
+		"multiplier"            : 1
+	},
 	"framegrabber" :
 	{
 		"type"               : "auto",

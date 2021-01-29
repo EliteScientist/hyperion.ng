@@ -35,3 +35,8 @@ int AudioGrabber::grabFrame(Image<ColorRgb>& image)
 
 	return 0;
 }
+
+
+bool AudioGrabber::startAudio() { return false; }
+void AudioGrabber::stopAudio() {}
+int16_t AudioGrabber::grabAudioFrame(int16_t* buffer) { return 0; }
