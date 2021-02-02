@@ -4,6 +4,9 @@
 
 // Hyperion-utils includes
 #include <grabber/AudioGrabber.h>
+#include <DSound.h>
+
+#define AUDIO_NOTIFICATION_COUNT	4
 
 ///
 /// @brief The Windows Audio capture implementation
@@ -34,18 +37,54 @@ class AudioGrabberWindows : public AudioGrabber
 		///
 		QMultiMap<QString, int> getDeviceInputs(const QString& devicePath) const override;
 
+
 	private:
 		///
 		/// @brief free the _screen pointer
 		///
 		void freeResources();
 		void refreshDevices();
+		bool configureCaptureInterface();
+		void processAudioBuffer();
 
+		LPDIRECTSOUNDCAPTURE8 recordingDevice;
+		LPDIRECTSOUNDCAPTUREBUFFER8 recordingBuffer;
 
-	private slots:
-		int16_t grabAudioFrame(int16_t* buffer) override;
+		HANDLE notificationEvent;
+		DWORD bufferCapturePosition;
+		DWORD bufferCaptureSize;
+		DWORD notificationSize;
+		
 
 	private:
-		QObjectList _audioDevices;
+
+		static BOOL CALLBACK DirectSoundEnumProcessor(LPGUID deviceIdGuid, LPCTSTR deviceDescStr,
+			LPCTSTR deviceModelStr, LPVOID context)
+		{
+			QMap<QString, AudioGrabber::DeviceProperties>* devices = (QMap<QString, AudioGrabber::DeviceProperties>*)context;
+
+
+			AudioGrabber::DeviceProperties device;
+
+			// Process Device ID
+			LPOLESTR deviceIdStr;
+			StringFromCLSID(*deviceIdGuid, &deviceIdStr);
+
+			QString deviceId = QString::fromWCharArray(deviceIdStr);
+
+			// Process Device Information
+			QString deviceName = QString::fromUtf8(deviceDescStr);
+
+			Debug(Logger::getInstance("AudioGrabber"), "Found Audio Device: %s = %s", deviceIdStr, deviceDescStr);
+
+			
+			CoTaskMemFree(deviceIdStr);
+
+			device.name = deviceName;
+
+			devices->insert(deviceId, device);
+
+			return TRUE;
+		}
 
 };

@@ -37,6 +37,7 @@ class AudioWrapper : public GrabberWrapper
 		void stop() override;
 
 	private:
+		void newFrame(const Image<ColorRgb>& image);
 		/// The actual grabber
 #ifdef WIN32
 		AudioGrabberWindows _grabber;

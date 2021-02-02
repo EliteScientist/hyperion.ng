@@ -29,9 +29,14 @@ GrabberWrapper::GrabberWrapper(const QString& grabberName, Grabber * ggrabber, u
 	connect(_timer, &QTimer::timeout, this, &GrabberWrapper::action);
 
 	// connect the image forwarding
-	(_grabberName.startsWith("V4L"))
-		? connect(this, &GrabberWrapper::systemImage, GlobalSignals::getInstance(), &GlobalSignals::setV4lImage)
-		: connect(this, &GrabberWrapper::systemImage, GlobalSignals::getInstance(), &GlobalSignals::setSystemImage);
+	if (_grabberName.startsWith("V4L"))
+		connect(this, &GrabberWrapper::systemImage, GlobalSignals::getInstance(), &GlobalSignals::setV4lImage);
+	else if (_grabberName.startsWith("Audio"))
+		connect(this, &GrabberWrapper::systemImage, GlobalSignals::getInstance(), &GlobalSignals::setAudioImage);
+	else
+		connect(this, &GrabberWrapper::systemImage, GlobalSignals::getInstance(), &GlobalSignals::setSystemImage);
+
+	
 
 	// listen for source requests
 	connect(GlobalSignals::getInstance(), &GlobalSignals::requestSource, this, &GrabberWrapper::handleSourceRequest);
@@ -229,7 +234,7 @@ void GrabberWrapper::tryStart()
 	// verify start condition
 	if((_grabberName.startsWith("V4L") && !GRABBER_V4L_CLIENTS.empty()) ||
 		(!_grabberName.startsWith("V4L") && !GRABBER_SYS_CLIENTS.empty()) ||
-		(!_grabberName.startsWith("AUDIO") && !GRABBER_AUDIO_CLIENTS.empty()))
+		(!_grabberName.startsWith("Audio") && !GRABBER_AUDIO_CLIENTS.empty()))
 	{
 		start();
 	}
@@ -237,7 +242,7 @@ void GrabberWrapper::tryStart()
 
 QStringList GrabberWrapper::getDevices() const
 {
-	if(_grabberName.startsWith("V4L") || _grabberName.startsWith("AUDIO"))
+	if(_grabberName.startsWith("V4L") || _grabberName.startsWith("Audio"))
 		return _ggrabber->getDevices();
 
 	return QStringList();
@@ -245,7 +250,7 @@ QStringList GrabberWrapper::getDevices() const
 
 QString GrabberWrapper::getDeviceName(const QString& devicePath) const
 {
-	if(_grabberName.startsWith("V4L") || _grabberName.startsWith("AUDIO"))
+	if(_grabberName.startsWith("V4L") || _grabberName.startsWith("Audio"))
 		return _ggrabber->getDeviceName(devicePath);
 
 	return QString();
@@ -253,11 +258,9 @@ QString GrabberWrapper::getDeviceName(const QString& devicePath) const
 
 QMultiMap<QString, int> GrabberWrapper::getDeviceInputs(const QString& devicePath) const
 {
-	if(_grabberName.startsWith("V4L") || _grabberName.startsWith("AUDIO"))
+	if(_grabberName.startsWith("V4L") || _grabberName.startsWith("Audio"))
 		return _ggrabber->getDeviceInputs(devicePath);
-
-	
-
+		
 	return QMultiMap<QString, int>();
 }
 

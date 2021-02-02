@@ -5,6 +5,7 @@
 // Hyperion-utils includes
 #include <utils/ColorRgb.h>
 #include <hyperion/Grabber.h>
+#include <utils/Logger.h>
 
 ///
 /// @brief The DirectX9 capture implementation
@@ -33,8 +34,6 @@ class AudioGrabber : public Grabber
 		{
 			QString					name = QString();
 			QMultiMap<QString, int>	inputs = QMultiMap<QString, int>();
-			QStringList				resolutions = QStringList();
-			QStringList				framerates = QStringList();
 		};
 	private:
 		///
@@ -42,8 +41,12 @@ class AudioGrabber : public Grabber
 		///
 		void freeResources();
 		
-		virtual int16_t grabAudioFrame(int16_t * buffer);
+	signals:
+		void newFrame(const Image<ColorRgb>& image);
 
 	protected:
 		QMap<QString, AudioGrabber::DeviceProperties> _deviceProperties;
+		Logger* _log;
+		QString _device;
+		void processAudioFrame(int16_t* buffer, int16_t length);
 };

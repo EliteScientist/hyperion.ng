@@ -526,7 +526,6 @@ void JsonAPI::handleServerInfoCommand(const QJsonObject &message, const QString 
 #endif
 
 #if defined(ENABLE_AUDIO)
-
 	QJsonArray availableAudiodevices;
 	for (const auto& devicePath : GrabberWrapper::getInstance()->getDevices())
 	{
@@ -534,6 +533,7 @@ void JsonAPI::handleServerInfoCommand(const QJsonObject &message, const QString 
 		device["device"] = devicePath;
 		device["name"] = GrabberWrapper::getInstance()->getDeviceName(devicePath);
 
+		/*
 		QJsonArray availableInputs;
 		QMultiMap<QString, int> inputs = GrabberWrapper::getInstance()->getDeviceInputs(devicePath);
 		for (auto input = inputs.begin(); input != inputs.end(); input++)
@@ -544,7 +544,7 @@ void JsonAPI::handleServerInfoCommand(const QJsonObject &message, const QString 
 			availableInputs.append(availableInput);
 		}
 		device.insert("inputs", availableInputs);
-
+		*/
 		
 		availableAudiodevices.append(device);
 	}

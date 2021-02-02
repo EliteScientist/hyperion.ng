@@ -2,7 +2,9 @@
 #include <QImage>
 
 AudioGrabber::AudioGrabber(const QString& device)
-	: Grabber("AudioGrabber")
+	: Grabber("AudioGrabber"),
+	_log(Logger::getInstance("AudioGrabber")),
+	_device(device)
 {
 	// init
 }
@@ -32,11 +34,18 @@ int AudioGrabber::grabFrame(Image<ColorRgb>& image)
 
 	// Free buffer
 	
+	
 
 	return 0;
 }
 
+void processAudioFrame(int16_t* buffer, int16_t length)
+{
+	// Apply Visualizer and Construct Image
+
+	// emit newFrame(image);
+}
 
 bool AudioGrabber::startAudio() { return false; }
 void AudioGrabber::stopAudio() {}
-int16_t AudioGrabber::grabAudioFrame(int16_t* buffer) { return 0; }
+
