@@ -10,11 +10,6 @@ AudioWrapper::AudioWrapper(const QString & device, const unsigned updateRate_Hz)
 	connect(&_grabber, &AudioGrabber::newFrame, this, &AudioWrapper::newFrame, Qt::DirectConnection);
 }
 
-void AudioWrapper::action()
-{
-	transferFrame(_grabber);
-}
-
 bool AudioWrapper::start()
 {
 	return (_grabber.startAudio() && GrabberWrapper::start());

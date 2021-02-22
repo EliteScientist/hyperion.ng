@@ -45,15 +45,20 @@ class AudioGrabberWindows : public AudioGrabber
 		void freeResources();
 		void refreshDevices();
 		bool configureCaptureInterface();
-		void processAudioBuffer();
 
 		LPDIRECTSOUNDCAPTURE8 recordingDevice;
 		LPDIRECTSOUNDCAPTUREBUFFER8 recordingBuffer;
 
-		HANDLE notificationEvent;
+		HANDLE audioThread;
 		DWORD bufferCapturePosition;
 		DWORD bufferCaptureSize;
 		DWORD notificationSize;
+		static DWORD WINAPI AudioThread(LPVOID param);
+
+	public:
+		HANDLE notificationEvent;
+		std::atomic<bool> isRunning{ false };
+		void processAudioBuffer();
 		
 
 	private:

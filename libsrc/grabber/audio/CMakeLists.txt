@@ -16,5 +16,6 @@ add_library( audio-grabber ${AUDIO_GRABBER_SOURCES} )
 
 target_link_libraries(audio-grabber
     hyperion
+    DSound
     ${QT_LIBRARIES}
 )

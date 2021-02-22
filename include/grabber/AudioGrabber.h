@@ -12,6 +12,7 @@
 ///
 class AudioGrabber : public Grabber
 {
+	Q_OBJECT
 	public:
 
 		AudioGrabber(const QString& device);
@@ -48,5 +49,5 @@ class AudioGrabber : public Grabber
 		QMap<QString, AudioGrabber::DeviceProperties> _deviceProperties;
 		Logger* _log;
 		QString _device;
-		void processAudioFrame(int16_t* buffer, int16_t length);
+		void processAudioFrame(int16_t* buffer, int length);
 };
