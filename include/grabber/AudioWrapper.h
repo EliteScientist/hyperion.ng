@@ -6,7 +6,7 @@
 	#include <grabber/AudioGrabberWindows.h>
 #endif
 
-#ifdef LINUX
+#ifdef __linux__
 	#include <grabber/AudioGrabberLinux.h>
 #endif
 
@@ -21,12 +21,14 @@ class AudioWrapper : public GrabberWrapper
 		/// @param[in] device			Audio Device Identifier
 		/// @param[in] updateRate_Hz	The audio grab rate [Hz]
 		///
-		AudioWrapper(const QString& device, const unsigned updateRate_Hz);
+		AudioWrapper(const QString& device, const QJsonObject& config);
 
 		///
 		/// Destructor of this Audio grabber. Releases any claimed resources.
 		///
 		virtual ~AudioWrapper() {};
+
+		void handleSettingsUpdate(settings::type type, const QJsonDocument& config);
 
 	public slots:
 		///
@@ -38,12 +40,13 @@ class AudioWrapper : public GrabberWrapper
 
 	private:
 		void newFrame(const Image<ColorRgb>& image);
+
 		/// The actual grabber
 #ifdef WIN32
 		AudioGrabberWindows _grabber;
 #endif
 
-#ifdef LINUX
+#ifdef __linux__
 		AudioGrabberLinux _grabber;
 #endif
 

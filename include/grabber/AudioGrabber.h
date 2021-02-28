@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QObject>
+#include <QColor>
 
 // Hyperion-utils includes
 #include <utils/ColorRgb.h>
@@ -15,7 +16,7 @@ class AudioGrabber : public Grabber
 	Q_OBJECT
 	public:
 
-		AudioGrabber(const QString& device);
+		AudioGrabber(const QString& device, const QJsonObject& config);
 
 		virtual ~AudioGrabber();
 
@@ -36,6 +37,12 @@ class AudioGrabber : public Grabber
 			QString					name = QString();
 			QMultiMap<QString, int>	inputs = QMultiMap<QString, int>();
 		};
+
+		Logger* getLog();
+
+		void setDevicePath(const QString& device);
+		void setConfiguration(const QJsonObject& config);
+
 	private:
 		///
 		/// @brief free the _screen pointer
@@ -49,5 +56,18 @@ class AudioGrabber : public Grabber
 		QMap<QString, AudioGrabber::DeviceProperties> _deviceProperties;
 		Logger* _log;
 		QString _device;
+
+		const uint8_t MAX_CALC_VALUE = 100;
+
+		// Default Empty Color
+		const QColor BLACK_COLOR = QColor("#000000");
+
+		QColor hotColor;
+		uint8_t warnValue;
+		QColor warnColor;
+		uint8_t safeValue;
+		QColor safeColor;
+		uint16_t multiplier;
+
 		void processAudioFrame(int16_t* buffer, int length);
 };

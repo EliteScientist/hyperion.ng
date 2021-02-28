@@ -1,4 +1,3 @@
-
 #include <grabber/AudioGrabberWindows.h>
 #include <grabber/AudioGrabber.h>
 #include <QImage>
@@ -6,7 +5,7 @@
 #pragma comment(lib,"dsound.lib")
 #pragma comment(lib, "dxguid.lib")
 
-AudioGrabberWindows::AudioGrabberWindows(const QString& device) : AudioGrabber(device)
+AudioGrabberWindows::AudioGrabberWindows(const QString& device, const QJsonObject& config) : AudioGrabber(device, config)
 {
 	// init
 	this->refreshDevices();
@@ -81,6 +80,7 @@ bool AudioGrabberWindows::configureCaptureInterface()
 
 	bufferCapturePosition = 0;
 
+	// Query Capture8 Buffer
 	if (FAILED(preBuffer->QueryInterface(IID_IDirectSoundCaptureBuffer8, (LPVOID*)&recordingBuffer)))
 	{
 		Error(_log, "Failed to retrieve recording buffer");
@@ -143,7 +143,15 @@ bool AudioGrabberWindows::startAudio()
 
 	this->isRunning.store(true, std::memory_order_release);
 
-	this->audioThread	= CreateThread(NULL, 0, AudioThread, (void *) this, 0, NULL);
+	this->audioThread	= CreateThread(NULL, 0, AudioThreadRunner, (void *) this, 0, NULL);
+
+	if (this->audioThread == NULL)
+	{
+		Error(_log, "Failed to create audio capture thread");
+
+		this->stopAudio();
+		return false;
+	}
 
 	return true;
 }
@@ -173,9 +181,10 @@ void AudioGrabberWindows::stopAudio()
 	}
 
 	CloseHandle(notificationEvent);
+	CloseHandle(this->audioThread);
 }
 
-DWORD WINAPI AudioGrabberWindows::AudioThread(LPVOID param)
+DWORD WINAPI AudioGrabberWindows::AudioThreadRunner(LPVOID param)
 {
 	AudioGrabberWindows* This = (AudioGrabberWindows*)param;
 

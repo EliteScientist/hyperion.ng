@@ -1,5 +1,6 @@
 #pragma once
-
+#include <pthread.h>
+#include <alsa/asoundlib.h>
 #include <QObject>
 
 // Hyperion-utils includes
@@ -9,8 +10,12 @@ class AudioGrabberLinux : public AudioGrabber
 {
 	public:
 
-		AudioGrabberLinux(const QString& device);
+		AudioGrabberLinux(const QString& device, const QJsonObject& config);
+		std::atomic<bool> isRunning{ false };
+		void processAudioBuffer(int frames);
 
+		snd_pcm_t * captureDevice;
+		snd_pcm_hw_params_t * captureDeviceConfig;
 
 	public slots:
 		bool startAudio() override;
@@ -39,7 +44,9 @@ class AudioGrabberLinux : public AudioGrabber
 		void freeResources();
 		void refreshDevices();
 		bool configureCaptureInterface();
+		unsigned int sampleRate = 44100;
 
-	public:
-		std::atomic<bool> isRunning{ false };
+		pthread_t audioThread;
 };
+
+static void* AudioThreadRunner(void* params);

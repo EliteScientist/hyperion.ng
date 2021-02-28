@@ -1,13 +1,16 @@
 #include <grabber/AudioGrabber.h>
 #include <math.h>
 #include <QImage>
+#include <QObject>
+#include <QJsonObject>
 
-AudioGrabber::AudioGrabber(const QString& device)
+AudioGrabber::AudioGrabber(const QString& device, const QJsonObject& config)
 	: Grabber("AudioGrabber"),
 	_log(Logger::getInstance("AudioGrabber")),
 	_device(device)
 {
 	// init
+	this->setConfiguration(config);
 }
 
 AudioGrabber::~AudioGrabber()
@@ -25,39 +28,34 @@ int AudioGrabber::grabFrame(Image<ColorRgb>& image)
 	if (!_enabled)
 		return 0;
 
-	// Define buffer
-
-	// Grab audio into buffer
-
-	// Process visualizer
-
-	// Fill image
-
-	// Free buffer
-	
-	
-
 	return 0;
+}
+
+void AudioGrabber::setDevicePath(const QString& device)
+{
+	this->_device	= device;
+}
+
+void AudioGrabber::setConfiguration(const QJsonObject& config)
+{
+	this->hotColor = QColor(config["hotColor"].toString("#0000FF"));
+	this->warnColor = QColor(config["warnColor"].toString("#00FFFF"));
+	this->safeColor = QColor(config["safeColor"].toString("#00FF00"));
+
+	this->warnValue = config["warnValue"].toInt(80);
+	this->safeValue = config["safeValue"].toInt(45);
+	this->multiplier = config["multiplier"].toInt(1);
 }
 
 void AudioGrabber::processAudioFrame(int16_t* buffer, int length)
 {
 	// Apply Visualizer and Construct Image
 
+	// TODO: Pass Audio Frame to python and let the script calculate the image.
+
 	// Default UVMeter - Later Make this pluggable for different audio effects
 	int32_t bufferSum = 0;
-
-	const uint8_t max = 100;
-	const QColor  hotColor = QColor(0x00, 0x00, 0xFF); // For some unknown reason this is stored in a BGR format
-	const uint8_t warn = 80;
-	const QColor  warnColor = QColor(0x00, 0xFF, 0xFF);
-	const uint8_t safe = 45;
-	const QColor  safeColor = QColor(0x00, 0xFF, 0x00);
-	const uint16_t multiplier = 5;
 	
-	// Default Empty Color
-	const QColor blackColor = QColor(0, 0, 0);
-
 	// Calculate the the average value
 	for (int i = 0; i < length; i++)
 		bufferSum += abs(buffer[i]);
@@ -68,22 +66,20 @@ void AudioGrabber::processAudioFrame(int16_t* buffer, int length)
 	const float percentage = result / INT16_MAX;
 
 	// Calculate the value
-	const uint8_t value = ceil(percentage * max);
-
-	Debug(_log, "AUDIO VALUE: %u", value);
-
+	const uint8_t value = ceil(percentage * MAX_CALC_VALUE);
+		
 	// Draw Image
-	QImage image(1, max, QImage::Format_RGB888);
-	image.fill(blackColor);
+	QImage image(1, MAX_CALC_VALUE, QImage::Format_RGB888);
+	image.fill(BLACK_COLOR);
 	
-	for (int i = 0; i < max; i++)
+	for (int i = 0; i < MAX_CALC_VALUE; i++)
 	{
-		QColor color = blackColor;
-		uint8_t position = max - i;
+		QColor color = BLACK_COLOR;
+		uint8_t position = MAX_CALC_VALUE - i;
 
-		if (position < safe)
+		if (position < safeValue)
 			color = safeColor;
-		else if (position < warn)
+		else if (position < warnValue)
 			color = warnColor;
 		else
 			color = hotColor;
@@ -91,7 +87,7 @@ void AudioGrabber::processAudioFrame(int16_t* buffer, int length)
 		if (position < value)
 			image.setPixelColor(0, i, color);
 		else
-			image.setPixelColor(0, i, blackColor);
+			image.setPixelColor(0, i, BLACK_COLOR);
 	}
 
 	// Convert to Image<ColorRGB>
@@ -115,6 +111,11 @@ void AudioGrabber::processAudioFrame(int16_t* buffer, int length)
 	memcpy(finalImage.memptr(), imageData.data(), imageData.size());
 
 	emit newFrame(finalImage);
+}
+
+Logger* AudioGrabber::getLog()
+{
+	return this->_log;
 }
 
 bool AudioGrabber::startAudio() { return false; }

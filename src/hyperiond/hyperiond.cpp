@@ -803,9 +803,9 @@ void HyperionDaemon::createGrabberOsx(const QJsonObject& grabberConfig)
 
 void HyperionDaemon::createGrabberAudio(const QJsonObject& grabberConfig)
 {
-	_audioGrabber = new AudioWrapper(grabberConfig["device"].toString(), _grabber_frequency);
+	_audioGrabber = new AudioWrapper(grabberConfig["device"].toString(), grabberConfig);
 
-	connect(this, &HyperionDaemon::setVideoMode, _audioGrabber, &AudioWrapper::setVideoMode); // Do we need this?
+	//connect(this, &HyperionDaemon::setVideoMode, _audioGrabber, &AudioWrapper::setVideoMode); // Do we need this?
 	connect(this, &HyperionDaemon::settingsChanged, _audioGrabber, &AudioWrapper::handleSettingsUpdate);
 }
 

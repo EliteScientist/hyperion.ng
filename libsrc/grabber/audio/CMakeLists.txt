@@ -14,8 +14,22 @@ endif()
 
 add_library( audio-grabber ${AUDIO_GRABBER_SOURCES} )
 
-target_link_libraries(audio-grabber
-    hyperion
-    DSound
-    ${QT_LIBRARIES}
-)
+set(AUDIO_LIBS hyperion ${QT_LIBRARIES})
+
+
+if (WIN32)
+    set(AUDIO_LIBS ${AUDIO_LIBS} DSound)
+elseif(${CMAKE_SYSTEM} MATCHES "Linux")
+    find_package(ALSA REQUIRED)                                    
+    if (ALSA_FOUND)                                                
+        include_directories(${ALSA_INCLUDE_DIRS})
+        set(AUDIO_LIBS ${AUDIO_LIBS} ${ALSA_LIBRARIES})
+    endif(ALSA_FOUND)
+
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+    find_package(Threads REQUIRED)
+    set(AUDIO_LIBS ${AUDIO_LIBS} Threads::Threads) # PRIVATE
+endif()
+
+
+target_link_libraries(audio-grabber ${AUDIO_LIBS})

@@ -87,7 +87,6 @@
 	"grabberAudio" :
 	{
 		"device"                : "auto",
-		"input"                 : 0,
 		"multiplier"            : 1
 	},
 	"framegrabber" :
@@ -186,7 +185,9 @@
 		"systemEnable" : true,
 		"systemPriority" : 250,
 		"v4lEnable" : false,
-		"v4lPriority" : 240
+		"v4lPriority": 240,
+		"audioEnable": false,
+		"audioPriority": 230
 	},
 
 	"network" :

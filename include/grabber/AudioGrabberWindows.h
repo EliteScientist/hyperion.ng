@@ -15,7 +15,7 @@ class AudioGrabberWindows : public AudioGrabber
 {
 	public:
 
-		AudioGrabberWindows(const QString& device);
+		AudioGrabberWindows(const QString& device, const QJsonObject& config);
 
 
 	public slots:
@@ -53,7 +53,7 @@ class AudioGrabberWindows : public AudioGrabber
 		DWORD bufferCapturePosition;
 		DWORD bufferCaptureSize;
 		DWORD notificationSize;
-		static DWORD WINAPI AudioThread(LPVOID param);
+		static DWORD WINAPI AudioThreadRunner(LPVOID param);
 
 	public:
 		HANDLE notificationEvent;

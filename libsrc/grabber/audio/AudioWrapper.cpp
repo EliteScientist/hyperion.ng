@@ -1,11 +1,10 @@
 #include <grabber/AudioWrapper.h>
 #include <hyperion/GrabberWrapper.h>
-#include <QTimer>
-#include <QMetaType>
+#include <QObject>
 
-AudioWrapper::AudioWrapper(const QString & device, const unsigned updateRate_Hz)
-	: GrabberWrapper("AudioGrabber", &_grabber, 0, 0, updateRate_Hz)
-	, _grabber(device)	
+AudioWrapper::AudioWrapper(const QString & device, const QJsonObject& config)
+	: GrabberWrapper("AudioGrabber", &_grabber, 0, 0, 250)
+	, _grabber(device, config)
 {
 	connect(&_grabber, &AudioGrabber::newFrame, this, &AudioWrapper::newFrame, Qt::DirectConnection);
 }
@@ -29,4 +28,19 @@ void AudioWrapper::action()
 void AudioWrapper::newFrame(const Image<ColorRgb>& image)
 {
 	emit systemImage(_grabberName, image);
+}
+
+void AudioWrapper::handleSettingsUpdate(settings::type type, const QJsonDocument& config)
+{
+	if (type == settings::AUDIO)
+	{
+		const QJsonObject& obj = config.object();
+
+		this->stop();
+				
+		_grabber.setDevicePath(obj["device"].toString());
+		_grabber.setConfiguration(obj);
+
+		this->start();
+	}
 }

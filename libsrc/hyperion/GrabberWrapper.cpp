@@ -180,13 +180,6 @@ void GrabberWrapper::handleSettingsUpdate(settings::type type, const QJsonDocume
 		// eval new update time
 		updateTimer(1000/obj["frequency_Hz"].toInt(10));
 	}
-	else if (type == settings::AUDIO)
-	{
-		const QJsonObject& obj = config.object();
-
-		// eval new update time
-		updateTimer(1000 / obj["frequency_Hz"].toInt(10));
-	}
 }
 
 void GrabberWrapper::handleSourceRequest(hyperion::Components component, int hyperionInd, bool listen)
