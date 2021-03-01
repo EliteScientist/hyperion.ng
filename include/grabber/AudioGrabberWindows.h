@@ -76,15 +76,14 @@ class AudioGrabberWindows : public AudioGrabber
 			StringFromCLSID(*deviceIdGuid, &deviceIdStr);
 
 			QString deviceId = QString::fromWCharArray(deviceIdStr);
+			CoTaskMemFree(deviceIdStr);
 
 			// Process Device Information
 			QString deviceName = QString::fromUtf8(deviceDescStr);
 
-			Debug(Logger::getInstance("AudioGrabber"), "Found Audio Device: %s = %s", deviceIdStr, deviceDescStr);
-
+			Debug(Logger::getInstance("AudioGrabber"), "Found Audio Device: %s", deviceDescStr);
+					
 			
-			CoTaskMemFree(deviceIdStr);
-
 			device.name = deviceName;
 
 			devices->insert(deviceId, device);

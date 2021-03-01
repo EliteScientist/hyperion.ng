@@ -180,6 +180,9 @@ bool AudioGrabberLinux::configureCaptureInterface()
 
 bool AudioGrabberLinux::startAudio()
 {
+	if (!_enabled)
+		return false;
+
 	Debug(_log, "Start Audio With %s", this->getDeviceName(_device).toStdString().c_str());
 	
 

@@ -13,6 +13,8 @@ AudioGrabberWindows::AudioGrabberWindows(const QString& device, const QJsonObjec
 
 void AudioGrabberWindows::refreshDevices()
 {
+	Debug(_log, "Refreshing Audio Devices");
+
 	_deviceProperties.clear();
 
 	if (FAILED(DirectSoundCaptureEnumerate(DirectSoundEnumProcessor, (VOID*) &_deviceProperties)))
@@ -47,6 +49,10 @@ bool AudioGrabberWindows::configureCaptureInterface()
 	{
 		Error(_log, "Failed to create capture device: %s", this->getDeviceName(_device).toStdString().c_str());
 		return false;
+	}
+	else
+	{
+		CoTaskMemFree(deviceId);
 	}
 
 	// Define Audio Format & Create Buffer
@@ -131,6 +137,9 @@ bool AudioGrabberWindows::configureCaptureInterface()
 
 bool AudioGrabberWindows::startAudio()
 {
+	if (!_enabled)
+		return false;
+
 	Debug(_log, "Start Audio With %s", this->getDeviceName(_device).toStdString().c_str());
 
 	if (!this->configureCaptureInterface())
@@ -161,9 +170,10 @@ void AudioGrabberWindows::stopAudio()
 	if (!this->isRunning.load(std::memory_order_acquire))
 		return;
 
+	Debug(_log, "Shutting down audio for: '%s'", this->getDeviceName(_device).toStdString().c_str());
+
 	this->isRunning.store(false, std::memory_order_release);
 
-	Debug(_log, "Shutting down audio for: '%s'", this->getDeviceName(_device).toStdString().c_str());
 
 	if (FAILED(recordingBuffer->Stop()))
 	{
@@ -187,6 +197,7 @@ void AudioGrabberWindows::stopAudio()
 DWORD WINAPI AudioGrabberWindows::AudioThreadRunner(LPVOID param)
 {
 	AudioGrabberWindows* This = (AudioGrabberWindows*)param;
+	Debug(This->_log, "Audio capture thread started.");
 
 	while (This->isRunning.load(std::memory_order_acquire))
 	{
@@ -199,6 +210,8 @@ DWORD WINAPI AudioGrabberWindows::AudioThreadRunner(LPVOID param)
 				break;
 		}
 	}
+
+	Debug(This->_log, "Audio capture thread stopped.");
 
 	return 0;
 }
@@ -269,7 +282,7 @@ void AudioGrabberWindows::processAudioBuffer()
 	
 	// Process Audio Frame
 	this->processAudioFrame(readBuffer, frameSize);
-
+		
 	delete[] readBuffer;
 }
 

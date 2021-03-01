@@ -3,7 +3,7 @@
 #include <QObject>
 
 AudioWrapper::AudioWrapper(const QString & device, const QJsonObject& config)
-	: GrabberWrapper("AudioGrabber", &_grabber, 0, 0, 250)
+	: GrabberWrapper("AudioGrabber", &_grabber, 0, 0, 1000)
 	, _grabber(device, config)
 {
 	connect(&_grabber, &AudioGrabber::newFrame, this, &AudioWrapper::newFrame, Qt::DirectConnection);

@@ -14,7 +14,7 @@ endif()
 
 add_library( audio-grabber ${AUDIO_GRABBER_SOURCES} )
 
-set(AUDIO_LIBS hyperion ${QT_LIBRARIES})
+set(AUDIO_LIBS hyperion)
 
 
 if (WIN32)
@@ -32,4 +32,4 @@ elseif(${CMAKE_SYSTEM} MATCHES "Linux")
 endif()
 
 
-target_link_libraries(audio-grabber ${AUDIO_LIBS})
+target_link_libraries(audio-grabber ${AUDIO_LIBS} ${QT_LIBRARIES})
