@@ -186,7 +186,9 @@ bool AudioGrabberLinux::startAudio()
 {
 	if (!_enabled)
 		return false;
-	
+
+	AudioGrabber::startAudio();
+
 	Debug(_log, "Start Audio With %s", this->getDeviceName(this->_device).toStdString().c_str());
 	
 
@@ -210,6 +212,8 @@ void AudioGrabberLinux::stopAudio()
 	if (!this->isRunning.load(std::memory_order_acquire))
 		return;
 
+	AudioGrabber::stopAudio();
+
 	Debug(_log, "Stopping Audio Interface");
 
 	this->isRunning.store(false, std::memory_order_release);
@@ -225,7 +229,9 @@ void AudioGrabberLinux::processAudioBuffer(int frames)
 	if (!this->isRunning.load(std::memory_order_acquire))
 		return;
 
-	int16_t * buffer = (int16_t*)calloc(frames * 2, sizeof(int16_t)); // * snd_pcm_format_width(SND_PCM_FORMAT_S16_LE) / 8 * 2);
+	ssize_t bytes = snd_pcm_frames_to_bytes(this->captureDevice, frames);
+
+	int16_t * buffer = (int16_t*)calloc(bytes / 2, sizeof(int16_t)); // * snd_pcm_format_width(SND_PCM_FORMAT_S16_LE) / 8 * 2);
 	
 	if (frames == 0)
 	{
@@ -241,7 +247,7 @@ void AudioGrabberLinux::processAudioBuffer(int frames)
 			Error(_log, "Error reading audio. Got %d frames instead of %d", framesRead, frames);
 		}
 		else
-			this->processAudioFrame(buffer, framesRead);
+			this->processAudioFrame(buffer, snd_pcm_frames_to_bytes(this->captureDevice, framesRead) / 2);
 	}
 
 	free(buffer);
@@ -290,7 +296,7 @@ static void * AudioThreadRunner(void* params)
 	{
 		snd_pcm_wait(This->captureDevice, 1000);
 
-		if ((framesAvailable = snd_pcm_avail_update(This->captureDevice)) > 0)
+		if ((framesAvailable = snd_pcm_avail(This->captureDevice)) > 0)
 			This->processAudioBuffer(framesAvailable);
 
 		pthread_yield();

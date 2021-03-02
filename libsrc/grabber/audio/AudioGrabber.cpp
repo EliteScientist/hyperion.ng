@@ -37,6 +37,12 @@ int AudioGrabber::grabFrame(Image<ColorRgb>& image)
 void AudioGrabber::setDevicePath(const QString& device)
 {
 	this->_device	= device;
+
+	if (this->started)
+	{
+		this->stopAudio();
+		this->startAudio();
+	}
 }
 
 void AudioGrabber::setConfiguration(const QJsonObject& config)
@@ -127,6 +133,14 @@ Logger* AudioGrabber::getLog()
 	return this->_log;
 }
 
-bool AudioGrabber::startAudio() { return false; }
-void AudioGrabber::stopAudio() {}
+bool AudioGrabber::startAudio()
+{
+	this->started = true;
+	return false;
+}
+
+void AudioGrabber::stopAudio()
+{
+	this->started = false;
+}
 

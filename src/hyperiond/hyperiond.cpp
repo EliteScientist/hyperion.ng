@@ -807,6 +807,8 @@ void HyperionDaemon::createGrabberAudio(const QJsonObject& grabberConfig)
 
 	//connect(this, &HyperionDaemon::setVideoMode, _audioGrabber, &AudioWrapper::setVideoMode); // Do we need this?
 	connect(this, &HyperionDaemon::settingsChanged, _audioGrabber, &AudioWrapper::handleSettingsUpdate);
+
+	Info(_log, "Audio grabber created");
 }
 
 

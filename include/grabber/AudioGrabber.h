@@ -69,5 +69,7 @@ class AudioGrabber : public Grabber
 		QColor safeColor;
 		uint16_t multiplier;
 
+		bool started	= false;
+
 		void processAudioFrame(int16_t* buffer, int length);
 };

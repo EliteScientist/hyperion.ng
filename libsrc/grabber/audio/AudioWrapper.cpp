@@ -35,14 +35,8 @@ void AudioWrapper::handleSettingsUpdate(settings::type type, const QJsonDocument
 	if (type == settings::AUDIO)
 	{
 		const QJsonObject& obj = config.object();
-
-		if (this->isActive())
-			this->stop();
 				
 		_grabber.setDevicePath(obj["device"].toString());
 		_grabber.setConfiguration(obj);
-
-		if (this->isActive())
-			this->start();
 	}
 }
