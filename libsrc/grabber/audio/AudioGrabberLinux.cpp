@@ -13,10 +13,12 @@ AudioGrabberLinux::AudioGrabberLinux(const QString& device, const QJsonObject& c
 
 void AudioGrabberLinux::refreshDevices()
 {
+	Debug(_log, "Enumerating Audio Input Devices");
+
 	_deviceProperties.clear();
 
 	snd_ctl_t* deviceHandle;
-	int soundCard, error, cardInput;
+	int soundCard = -1, error = -1, cardInput = -1;
 
 	snd_ctl_card_info_t* cardInfo;
 	snd_pcm_info_t* deviceInfo;
@@ -91,22 +93,22 @@ void AudioGrabberLinux::refreshDevices()
 bool AudioGrabberLinux::configureCaptureInterface()
 {
 	int error = -1;
-	if ((error = snd_pcm_open(&this->captureDevice, (this->_device.isEmpty()) ? this->_device.toStdString().c_str() : "default", SND_PCM_STREAM_CAPTURE, 0)) < 0)
+	if ((error = snd_pcm_open(&this->captureDevice, (this->_device.isEmpty() || this->_device == "auto") ? "default" : this->_device.toStdString().c_str(), SND_PCM_STREAM_CAPTURE, 0)) < 0)
 	{
-		Error(_log, "Failed to open audio device: %s", this->_device.toStdString().c_str());
+		Error(_log, "Failed to open audio device: %s, - %s", this->_device.toStdString().c_str(), snd_strerror(error));
 		return false;
 	}
 
 	if ((error = snd_pcm_hw_params_malloc(&this->captureDeviceConfig)) < 0)
 	{
-		Error(_log, "Failed to create hardware parameters");
+		Error(_log, "Failed to create hardware parameters: %s", snd_strerror(error));
 		snd_pcm_close(this->captureDevice);
 		return false;
 	}
 
 	if ((error = snd_pcm_hw_params_any(this->captureDevice, this->captureDeviceConfig)) < 0)
 	{
-		Error(_log, "Failed to initialize hardware parameters");
+		Error(_log, "Failed to initialize hardware parameters: %s", snd_strerror(error));
 		snd_pcm_hw_params_free(this->captureDeviceConfig);
 		snd_pcm_close(this->captureDevice);
 		return false;
@@ -114,7 +116,7 @@ bool AudioGrabberLinux::configureCaptureInterface()
 	
 	if ((error = snd_pcm_hw_params_set_access(this->captureDevice, this->captureDeviceConfig, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0)
 	{
-		Error(_log, "Failed to configure non-interleaved mode");
+		Error(_log, "Failed to configure non-interleaved mode: %s", snd_strerror(error));
 		snd_pcm_hw_params_free(this->captureDeviceConfig);
 		snd_pcm_close(this->captureDevice);
 		return false;
@@ -122,7 +124,7 @@ bool AudioGrabberLinux::configureCaptureInterface()
 	
 	if ((error = snd_pcm_hw_params_set_format(this->captureDevice, this->captureDeviceConfig, SND_PCM_FORMAT_S16_LE)) < 0)
 	{
-		Error(_log, "Failed to configure capture format");
+		Error(_log, "Failed to configure capture format: %s", snd_strerror(error));
 		snd_pcm_hw_params_free(this->captureDeviceConfig);
 		snd_pcm_close(this->captureDevice);
 		return false;
@@ -130,15 +132,15 @@ bool AudioGrabberLinux::configureCaptureInterface()
 
 	if ((error = snd_pcm_hw_params_set_rate_near(this->captureDevice, this->captureDeviceConfig, &this->sampleRate, 0)) < 0)
 	{
-		Error(_log, "Failed to configure sample rate");
+		Error(_log, "Failed to configure sample rate: %s", snd_strerror(error));
 		snd_pcm_hw_params_free(this->captureDeviceConfig);
 		snd_pcm_close(this->captureDevice);
 		return false;
 	}
 
-	if ((error = snd_pcm_hw_params_set_channels(this->captureDevice, this->captureDeviceConfig, 1)) < 0)
+	if ((error = snd_pcm_hw_params_set_channels(this->captureDevice, this->captureDeviceConfig, 2)) < 0)
 	{
-		Error(_log, "Failed to configure single channel capture");
+		Error(_log, "Failed to configure single channel capture: %s", snd_strerror(error));
 		snd_pcm_hw_params_free(this->captureDeviceConfig);
 		snd_pcm_close(this->captureDevice);
 		return false;
@@ -146,7 +148,7 @@ bool AudioGrabberLinux::configureCaptureInterface()
 
 	if ((error = snd_pcm_hw_params(this->captureDevice, this->captureDeviceConfig)) < 0)
 	{
-		Error(_log, "Failed to configure hardware parameters");
+		Error(_log, "Failed to configure hardware parameters: %s", snd_strerror(error));
 		snd_pcm_hw_params_free(this->captureDeviceConfig);
 		snd_pcm_close(this->captureDevice);
 		return false;
@@ -156,21 +158,21 @@ bool AudioGrabberLinux::configureCaptureInterface()
 
 	if ((error = snd_pcm_nonblock(this->captureDevice, 1)) < 0)
 	{
-		Error(_log, "Failed to configure non-blocking mode");
+		Error(_log, "Failed to configure non-blocking mode: %s", snd_strerror(error));
 		snd_pcm_close(this->captureDevice);
 		return false;
 	}
 	
 	if ((error = snd_pcm_prepare(this->captureDevice)) < 0)
 	{
-		Error(_log, "Failed to prepare audio interface");
+		Error(_log, "Failed to prepare audio interface: %s", snd_strerror(error));
 		snd_pcm_close(this->captureDevice);
 		return false;
 	}
 
 	if ((error = snd_pcm_start(this->captureDevice)) < 0)
 	{
-		Error(_log, "Failed to start audio interface");
+		Error(_log, "Failed to start audio interface: %s", snd_strerror(error));
 		snd_pcm_close(this->captureDevice);
 		return false;
 	}
@@ -182,8 +184,8 @@ bool AudioGrabberLinux::startAudio()
 {
 	if (!_enabled)
 		return false;
-
-	Debug(_log, "Start Audio With %s", this->getDeviceName(_device).toStdString().c_str());
+	
+	Debug(_log, "Start Audio With %s", this->getDeviceName(this->_device).toStdString().c_str());
 	
 
 	if (!this->configureCaptureInterface())
@@ -206,6 +208,8 @@ void AudioGrabberLinux::stopAudio()
 	if (!this->isRunning.load(std::memory_order_acquire))
 		return;
 
+	Debug(_log, "Stopping Audio Interface");
+
 	this->isRunning.store(false, std::memory_order_release);
 
 	if (this->audioThread != 0)
@@ -219,7 +223,7 @@ void AudioGrabberLinux::processAudioBuffer(int frames)
 	if (!this->isRunning.load(std::memory_order_acquire))
 		return;
 
-	int16_t* buffer	= (int16_t *) malloc(frames * snd_pcm_format_width(SND_PCM_FORMAT_S16_LE) / 8);
+	int16_t * buffer = (int16_t*)calloc(frames * 2, sizeof(int16_t)); // * snd_pcm_format_width(SND_PCM_FORMAT_S16_LE) / 8 * 2);
 	
 	if (frames == 0)
 	{
@@ -235,7 +239,7 @@ void AudioGrabberLinux::processAudioBuffer(int frames)
 			Error(_log, "Error reading audio. Got %d frames instead of %d", framesRead, frames);
 		}
 		else
-			this->processAudioFrame(buffer, framesRead); // 1 Channel * 2 bytes per sample
+			this->processAudioFrame(buffer, framesRead);
 	}
 
 	free(buffer);
@@ -254,7 +258,7 @@ QStringList AudioGrabberLinux::getDevices() const
 
 QString AudioGrabberLinux::getDeviceName(const QString& devicePath) const
 {
-	if (devicePath.isEmpty())
+	if (devicePath.isEmpty() || devicePath == "auto")
 		return "Default Device";
 
 	return _deviceProperties.value(devicePath).name;

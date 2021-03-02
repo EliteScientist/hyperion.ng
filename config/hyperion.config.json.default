@@ -87,7 +87,12 @@
 	"grabberAudio" :
 	{
 		"device"                : "auto",
-		"multiplier"            : 1
+		"multiplier"						: 1,
+		"hotColor"							: [255, 0, 0],
+		"warnColor"							: [255, 255, 0 ],
+		"warnValue"							: 80,
+		"safeColor"							: [0, 255, 0],
+		"safeValue"							: 45
 	},
 	"framegrabber" :
 	{

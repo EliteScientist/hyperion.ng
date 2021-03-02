@@ -28,7 +28,7 @@ bool AudioGrabberWindows::configureCaptureInterface()
 {
 	LPCLSID deviceId;
 
-	if (this->_device.isEmpty())
+	if (this->_device.isEmpty() || this->_device == "auto")
 	{
 		deviceId = NULL;
 	}
@@ -299,7 +299,7 @@ QStringList AudioGrabberWindows::getDevices() const
 
 QString AudioGrabberWindows::getDeviceName(const QString& devicePath) const
 {
-	if (devicePath.isEmpty())
+	if (devicePath.isEmpty() || devicePath == "auto")
 		return "Default Device";
 
 	return _deviceProperties.value(devicePath).name;

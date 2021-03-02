@@ -3,6 +3,9 @@
 #include <QImage>
 #include <QObject>
 #include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonValue>
+#include <QColor>
 
 AudioGrabber::AudioGrabber(const QString& device, const QJsonObject& config)
 	: Grabber("AudioGrabber"),
@@ -38,9 +41,14 @@ void AudioGrabber::setDevicePath(const QString& device)
 
 void AudioGrabber::setConfiguration(const QJsonObject& config)
 {
-	this->hotColor = QColor(config["hotColor"].toString("#0000FF"));
-	this->warnColor = QColor(config["warnColor"].toString("#00FFFF"));
-	this->safeColor = QColor(config["safeColor"].toString("#00FF00"));
+	QJsonArray hotColorArray = config["hotColor"].toArray(QJsonArray::fromVariantList(QVariantList::fromStdList({ QVariant(255), QVariant(0), QVariant(0) })));
+	QJsonArray warnColorArray = config["warnColor"].toArray(QJsonArray::fromVariantList(QVariantList::fromStdList({ QVariant(255), QVariant(255), QVariant(0) })));
+	QJsonArray safeColorArray = config["safeColor"].toArray(QJsonArray::fromVariantList(QVariantList::fromStdList({ QVariant(0), QVariant(255), QVariant(0) })));
+
+	
+	this->hotColor = QColor(hotColorArray.at(0).toInt(), hotColorArray.at(1).toInt(), hotColorArray.at(2).toInt());
+	this->warnColor = QColor(warnColorArray.at(0).toInt(), warnColorArray.at(1).toInt(), warnColorArray.at(2).toInt());
+	this->safeColor = QColor(safeColorArray.at(0).toInt(), safeColorArray.at(1).toInt(), safeColorArray.at(2).toInt());
 
 	this->warnValue = config["warnValue"].toInt(80);
 	this->safeValue = config["safeValue"].toInt(45);
@@ -50,7 +58,7 @@ void AudioGrabber::setConfiguration(const QJsonObject& config)
 void AudioGrabber::processAudioFrame(int16_t* buffer, int length)
 {
 	// Apply Visualizer and Construct Image
-
+	
 	// TODO: Pass Audio Frame to python and let the script calculate the image.
 
 	// Default UVMeter - Later Make this pluggable for different audio effects
@@ -67,7 +75,7 @@ void AudioGrabber::processAudioFrame(int16_t* buffer, int length)
 
 	// Calculate the value
 	const uint8_t value = ceil(percentage * MAX_CALC_VALUE);
-		
+				
 	// Draw Image
 	QImage image(1, MAX_CALC_VALUE, QImage::Format_RGB888);
 	image.fill(BLACK_COLOR);
@@ -102,9 +110,10 @@ void AudioGrabber::processAudioFrame(int16_t* buffer, int length)
 
 		for (int j = 0; j < image.width(); ++j)
 		{
-			imageData.append((char)qRed(scanline[j]));
-			imageData.append((char)qGreen(scanline[j]));
+			// Making this write as BGR allows the rest of the values to come in as RGB
 			imageData.append((char)qBlue(scanline[j]));
+			imageData.append((char)qGreen(scanline[j]));
+			imageData.append((char)qRed(scanline[j]));
 		}
 	}
 		

@@ -215,10 +215,10 @@ $(document).ready(function () {
         window.schema.grabberAudio.properties[key] = {
           "type": schema[key].type,
           "title": schema[key].title,
-          "enum": [].concat(["auto"], enumVals, ["custom"]),
+          "enum": [].concat(["auto"], enumVals),
           "options":
           {
-            "enum_titles": [].concat(["edt_conf_enum_automatic"], enumTitelVals, ["edt_conf_enum_custom"]),
+            "enum_titles": [].concat(["edt_conf_enum_automatic"], enumTitelVals),
           },
           "propertyOrder": schema[key].propertyOrder,
           "required": schema[key].required
@@ -402,8 +402,8 @@ $(document).ready(function () {
 
     conf_editor_audio.on('ready', function () {
       
-      if (window.serverConfig.grabberAudio.available_devices == 'custom' && window.serverConfig.grabberAudio.device != 'auto')
-        toggleAudioOption('device', true);
+      //if (window.serverConfig.grabberAudio.available_devices == 'custom' && window.serverConfig.grabberAudio.device != 'auto')
+      //  toggleAudioOption('device', true);
 
       if (window.serverConfig.grabberAudio.device == 'auto')
         conf_editor_audio.getEditor('root.grabberAudio.available_devices').setValue('auto');
@@ -412,7 +412,7 @@ $(document).ready(function () {
     $('#btn_submit_audio').off().on('click', function () {
       var audioOptions = conf_editor_audio.getValue();
 
-      if (audioOptions.grabberAudio.available_devices != 'custom' && audioOptions.grabberAudio.available_devices != 'auto')
+      if (audioOptions.grabberAudio.available_devices != 'auto')
         audioOptions.grabberAudio.device = audioOptions.grabberAudio.available_devices;
 
       if (audioOptions.grabberAudio.available_devices == 'auto')
