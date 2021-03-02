@@ -138,6 +138,7 @@ bool AudioGrabberLinux::configureCaptureInterface()
 		return false;
 	}
 
+	/* -- Fails for some audio devices
 	if ((error = snd_pcm_hw_params_set_channels(this->captureDevice, this->captureDeviceConfig, 2)) < 0)
 	{
 		Error(_log, "Failed to configure single channel capture: %s", snd_strerror(error));
@@ -145,6 +146,7 @@ bool AudioGrabberLinux::configureCaptureInterface()
 		snd_pcm_close(this->captureDevice);
 		return false;
 	}
+	*/
 
 	if ((error = snd_pcm_hw_params(this->captureDevice, this->captureDeviceConfig)) < 0)
 	{

@@ -738,6 +738,7 @@
   "general_comp_PROTOSERVER": "Protocol Buffers Server",
   "general_comp_SMOOTHING": "Smoothing",
   "general_comp_V4L": "USB Capture",
+  "general_comp_AUDIO": "Audio Capture",
   "general_country_cn": "China",
   "general_country_de": "Germany",
   "general_country_es": "Spain",
