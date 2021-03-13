@@ -11,7 +11,7 @@ class AudioGrabberLinux : public AudioGrabber
 	public:
 
 		AudioGrabberLinux(const QString& device, const QJsonObject& config);
-		virtual ~AudioGrabberLinux() {};
+		virtual ~AudioGrabberLinux();
 		std::atomic<bool> isRunning{ false };
 		void processAudioBuffer(int frames);
 
