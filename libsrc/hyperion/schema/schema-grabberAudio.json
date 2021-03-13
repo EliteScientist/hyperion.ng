@@ -12,7 +12,7 @@
 			},
 			"required": true,
 			"propertyOrder": 2,
-			"comment": "The 'available_devices' settings are dynamically inserted into the WebUI under PropertyOrder '1'."
+			"comment": "The 'available_audio_devices' settings are dynamically inserted into the WebUI under PropertyOrder '1'."
 		},
 		"multiplier": {
 			"type": "number",

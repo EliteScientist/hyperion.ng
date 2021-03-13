@@ -184,7 +184,7 @@ $(document).ready(function () {
 
   if (AUDIO_AVAIL) {
     var audio_dynamic_enum_schema = {
-      "available_devices":
+      "available_audio_devices":
       {
         "type": "string",
         "title": "edt_conf_audio_device_title",
@@ -200,7 +200,7 @@ $(document).ready(function () {
         var enumTitelVals = [];
         var audio_properties = JSON.parse(JSON.stringify(window.serverInfo.grabbers.audio_properties));
 
-        if (key === 'available_devices')
+        if (key === 'available_audio_devices')
         {
           for (var i = 0; i < audio_properties.length; i++)
           {
@@ -236,7 +236,7 @@ $(document).ready(function () {
       );
     }
 
-    // Insert dynamic v4l2 enum schema parts
+    // Insert dynamic audio enum schema parts
     Object.keys(audio_dynamic_enum_schema).forEach(function (key) {
       buildAudioSchemaPart(key, audio_dynamic_enum_schema, window.serverConfig.grabberAudio.device);
     });
@@ -272,6 +272,10 @@ $(document).ready(function () {
     $('#conf_cont').append(createOptPanel('fa-camera', $.i18n("edt_conf_fg_heading_title"), 'editor_container_fg', 'btn_submit_fg'));
     if (V4L2_AVAIL) {
       $('#conf_cont').append(createOptPanel('fa-camera', $.i18n("edt_conf_v4l2_heading_title"), 'editor_container_v4l2', 'btn_submit_v4l2'));
+    }
+
+    if (AUDIO_AVAIL) {
+      $('#conf_cont').append(createOptPanel('fa-camera', $.i18n("edt_conf_audio_heading_title"), 'editor_container_audio', 'btn_submit_audio'));
     }
   }
 
@@ -409,8 +413,9 @@ $(document).ready(function () {
         conf_editor_audio.getEditor('root.grabberAudio.available_devices').setValue('auto');
     });
 
-    $('#btn_submit_audio').off().on('click', function () {
-      var audioOptions = conf_editor_audio.getValue();
+    $('#btn_submit_audio').off().on('click', function ()
+    {
+      const audioOptions = conf_editor_audio.getValue();
 
       if (audioOptions.grabberAudio.available_devices != 'auto')
         audioOptions.grabberAudio.device = audioOptions.grabberAudio.available_devices;

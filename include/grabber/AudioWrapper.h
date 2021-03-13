@@ -26,7 +26,7 @@ class AudioWrapper : public GrabberWrapper
 		///
 		/// Destructor of this Audio grabber. Releases any claimed resources.
 		///
-		virtual ~AudioWrapper() {};
+		virtual ~AudioWrapper();
 
 		void handleSettingsUpdate(settings::type type, const QJsonDocument& config);
 

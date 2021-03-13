@@ -11,6 +11,11 @@ AudioGrabberLinux::AudioGrabberLinux(const QString& device, const QJsonObject& c
 	this->refreshDevices();
 }
 
+AudioGrabberLinux::~AudioGrabberLinux()
+{
+	this->freeResources();
+}
+
 void AudioGrabberLinux::refreshDevices()
 {
 	Debug(_log, "Enumerating Audio Input Devices");

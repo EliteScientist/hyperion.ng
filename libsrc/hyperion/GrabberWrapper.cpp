@@ -251,7 +251,7 @@ QString GrabberWrapper::getDeviceName(const QString& devicePath) const
 
 QMultiMap<QString, int> GrabberWrapper::getDeviceInputs(const QString& devicePath) const
 {
-	if(_grabberName.startsWith("V4L") || _grabberName.startsWith("Audio"))
+	if(_grabberName.startsWith("V4L"))
 		return _ggrabber->getDeviceInputs(devicePath);
 		
 	return QMultiMap<QString, int>();
